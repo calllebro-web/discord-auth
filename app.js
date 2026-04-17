@@ -38,26 +38,19 @@ app.get('/callback', async (req, res) => {
     const user = await userRes.json();
     const refreshToken = tokenData.refresh_token;
 
-    console.log(`✅ 사용자 인증: ${user.username} (ID: ${user.id})`);
-
-    // Python 봇에 토큰 저장 요청
+    // 3단계: Python 봇에 토큰 저장
     const BOT_SERVER = process.env.BOT_SERVER || 'http://localhost:8081';
 
-    try {
-      await fetch(`${BOT_SERVER}/api/save-token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user.id,
-          username: user.username,
-          access_token: accessToken,
-          refresh_token: refreshToken
-        })
-      });
-      console.log(`✅ 토큰 저장 요청 완료`);
-    } catch (err) {
-      console.warn(`⚠️ 토큰 저장 요청 실패: ${err.message}`);
-    }
+    fetch(`${BOT_SERVER}/api/save-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: user.id,
+        username: user.username,
+        access_token: accessToken,
+        refresh_token: refreshToken
+      })
+    }).catch(err => console.error(`토큰 저장 오류: ${err.message}`));
 
     res.send(`인증됨 이제 창을 닫아도 됩니다!`);
 
