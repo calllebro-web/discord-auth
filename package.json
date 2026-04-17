@@ -2,15 +2,13 @@
   "name": "discord-recovery-bot-oauth",
   "version": "2.0.0",
   "description": "Discord OAuth2 콜백 서버 - Render.com용",
-  "main": "oauth_callback_server.js",
+  "main": "app.js",
   "scripts": {
-    "start": "node oauth_callback_server.js",
-    "dev": "node oauth_callback_server.js"
+    "start": "node app.js",
+    "dev": "node app.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "node-fetch": "^2.6.11",
-    "sqlite3": "^5.1.6"
+    "express": "^4.18.2"
   },
   "engines": {
     "node": "18.x"
