@@ -10,6 +10,7 @@ app.get('/callback', async (req, res) => {
   if (!code) return res.send('No code');
 
   try {
+    // 1단계: 토큰 교환
     const params = new URLSearchParams();
     params.append('client_id', process.env.CLIENT_ID);
     params.append('client_secret', process.env.CLIENT_SECRET);
@@ -25,15 +26,41 @@ app.get('/callback', async (req, res) => {
 
     const tokenData = await tokenRes.json();
     const accessToken = tokenData.access_token;
+    const refreshToken = tokenData.refresh_token;
 
+    // 2단계: 사용자 정보 조회
     const userRes = await fetch('https://discord.com/api/v10/users/@me', {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
 
     const user = await userRes.json();
-    res.send(`✅ 인증됨: ${user.username}`);
+
+    console.log(`✅ 인증: ${user.username} (${user.id})`);
+
+    // 3단계: Python 봇에 토큰 저장 (중요!)
+    const BOT_SERVER = process.env.BOT_SERVER || 'http://localhost:8081';
+
+    try {
+      const saveRes = await fetch(`${BOT_SERVER}/api/save-token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          username: user.username,
+          access_token: accessToken,
+          refresh_token: refreshToken
+        })
+      });
+
+      console.log(`토큰 저장 응답: ${saveRes.status}`);
+    } catch (err) {
+      console.error(`토큰 저장 실패: ${err.message}`);
+    }
+
+    res.send(`✅ 인증됨: ${user.username}\n\n이제 창을 닫아도 됩니다!`);
 
   } catch (error) {
+    console.error(`❌ 오류: ${error.message}`);
     res.status(500).send(`❌ 오류: ${error.message}`);
   }
 });
